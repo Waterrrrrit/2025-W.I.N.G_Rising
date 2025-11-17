@@ -4,6 +4,17 @@ import sqlite3
 import bcrypt
 from datetime import datetime
 
+# 메인 페이지에서 사용할 이미지들 (원하는 파일명으로 바꾸기)
+MAIN_IMAGES = [
+    "main1.png",
+    "main2.png",
+    "main3.png",
+    "main4.png",
+    "main5.png",
+    "main6.png",
+    "main7.png"
+]
+
 # ---------- DB 연결 ----------
 def get_conn():
     return sqlite3.connect("users.db")
@@ -67,15 +78,20 @@ def login_user(user_id, password):
 def main():
     st.set_page_config(page_title="회원 관리 MVP", page_icon="🔐")
 
+    # 세션 상태 초기화
     if "user" not in st.session_state:
         st.session_state["user"] = None
+    if "page" not in st.session_state:
+        st.session_state["page"] = "home"   # home, auth
+    # 메인 이미지 인덱스
+    if "img_index" not in st.session_state:
+        st.session_state["img_index"] = 0
 
-    st.title("🔐 SQLite + Streamlit 회원 시스템 (MVP)")
-
-    # 로그인된 상태
+    # 1) 로그인된 상태 -----------------------------
     if st.session_state["user"] is not None:
         user = st.session_state["user"]
 
+        st.title("🔐 SQLite + Streamlit 회원 시스템 (MVP)")
         st.success(f"{user['name']}({user['user_id']})님, 환영합니다! 🎉")
 
         st.markdown("### 👤 내 정보")
@@ -89,48 +105,113 @@ def main():
 
         if st.button("로그아웃"):
             st.session_state["user"] = None
+            st.session_state["page"] = "home"
             st.rerun()
         return
 
-    # 로그인 / 회원가입 탭
-    tab_login, tab_register = st.tabs(["로그인", "회원가입"])
+    # 2) 메인(랜딩) 페이지 ------------------------
+    if st.session_state["page"] == "home":
+        st.title("🌱 다시펴다 W.I.N.G 회원 시스템")
 
-    with tab_login:
-        st.subheader("로그인")
-        login_user_id = st.text_input("아이디", key="login_user_id")
-        login_pw = st.text_input("비밀번호", type="password", key="login_pw")
+        # 현재 보여줄 이미지 선택
+        current_idx = st.session_state["img_index"]
+        current_img = None
+        if MAIN_IMAGES:
+            current_img = MAIN_IMAGES[current_idx % len(MAIN_IMAGES)]
 
-        if st.button("로그인하기"):
-            ok, result = login_user(login_user_id, login_pw)
-            if ok:
-                st.session_state["user"] = result
-                st.success("로그인 성공!")
-                st.rerun()
-            else:
-                st.error(result)
+        # 이미지 + 클릭 안내
+        if current_img is not None:
+            try:
+                st.image(
+                    current_img,
+                    use_column_width=True,
+                    caption="이미지를 클릭하거나 아래 버튼을 눌러 다음 이미지를 볼 수 있습니다.",
+                )
+            except Exception:
+                st.info(
+                    f"{current_img} 파일을 프로젝트 폴더(app.py와 같은 위치)에 넣으면 여기 표시됩니다."
+                )
+        else:
+            st.info("표시할 메인 이미지가 없습니다. MAIN_IMAGES 리스트를 확인해 주세요.")
 
-    with tab_register:
-        st.subheader("회원가입")
+        # 이미지를 '넘기는' 버튼 (이미지를 클릭해달라고 안내해도 버튼이 실제 동작 담당)
+        if st.button("👉 다음 이미지로 넘기기"):
+            st.session_state["img_index"] = (st.session_state["img_index"] + 1) % len(
+                MAIN_IMAGES
+            )
+            st.rerun()
 
-        reg_user_id = st.text_input("아이디", key="reg_user_id")
-        reg_pw = st.text_input("비밀번호", type="password", key="reg_pw")
-        reg_pw2 = st.text_input("비밀번호 확인", type="password", key="reg_pw2")
-        reg_name = st.text_input("이름", key="reg_name")
-        reg_phone = st.text_input("연락처 (선택)", key="reg_phone")
-        reg_org = st.text_input("소속 (선택)", key="reg_org")
+        st.markdown(
+            """
+            ### 폐현수막 업사이클링 프로젝트에 오신 것을 환영합니다 👋  
 
-        if st.button("회원가입하기"):
-            if reg_pw != reg_pw2:
-                st.error("비밀번호가 서로 다릅니다.")
-            elif not reg_user_id.strip() or not reg_pw.strip() or not reg_name.strip():
-                st.error("아이디, 비밀번호, 이름은 필수입니다.")
-            else:
-                ok, msg = register_user(reg_user_id, reg_pw, reg_name, reg_phone, reg_org)
+            이 페이지에서는  
+            - 프로젝트에 참여하는 **팀원/참여자 회원가입**  
+            - 활동에 필요한 **기본 정보 관리**  
+
+            를 간단하게 진행할 수 있습니다.
+            """
+        )
+
+        st.markdown("---")
+        st.write("아직 회원이 아니라면 먼저 **회원가입**, 이미 계정이 있다면 **로그인**을 진행해 주세요.")
+
+        if st.button("🔐 로그인 / 회원가입 하러 가기"):
+            st.session_state["page"] = "auth"
+            st.rerun()
+        return
+
+    # 3) 로그인 / 회원가입 페이지 -----------------
+    if st.session_state["page"] == "auth":
+        st.title("🔐 로그인 / 회원가입")
+
+        tab_login, tab_register = st.tabs(["로그인", "회원가입"])
+
+        # 로그인 탭
+        with tab_login:
+            st.subheader("로그인")
+            login_user_id = st.text_input("아이디", key="login_user_id")
+            login_pw = st.text_input("비밀번호", type="password", key="login_pw")
+
+            if st.button("로그인하기"):
+                ok, result = login_user(login_user_id, login_pw)
                 if ok:
-                    st.success(msg)
-                    st.info("이제 '로그인' 탭에서 로그인해 주세요.")
+                    st.session_state["user"] = result
+                    st.success("로그인 성공!")
+                    st.rerun()
                 else:
-                    st.error(msg)
+                    st.error(result)
+
+        # 회원가입 탭
+        with tab_register:
+            st.subheader("회원가입")
+
+            reg_user_id = st.text_input("아이디", key="reg_user_id")
+            reg_pw = st.text_input("비밀번호", type="password", key="reg_pw")
+            reg_pw2 = st.text_input("비밀번호 확인", type="password", key="reg_pw2")
+            reg_name = st.text_input("이름", key="reg_name")
+            reg_phone = st.text_input("연락처 (선택)", key="reg_phone")
+            reg_org = st.text_input("소속 (선택)", key="reg_org")
+
+            if st.button("회원가입하기"):
+                if reg_pw != reg_pw2:
+                    st.error("비밀번호가 서로 다릅니다.")
+                elif not reg_user_id.strip() or not reg_pw.strip() or not reg_name.strip():
+                    st.error("아이디, 비밀번호, 이름은 필수입니다.")
+                else:
+                    ok, msg = register_user(
+                        reg_user_id, reg_pw, reg_name, reg_phone, reg_org
+                    )
+                    if ok:
+                        st.success(msg)
+                        st.info("이제 '로그인' 탭에서 로그인해 주세요.")
+                    else:
+                        st.error(msg)
+
+        st.markdown("---")
+        if st.button("⬅ 메인 페이지로 돌아가기"):
+            st.session_state["page"] = "home"
+            st.rerun()
 
 if __name__ == "__main__":
     main()
