@@ -2,17 +2,10 @@
 import sqlite3
 
 def init_db():
-    # 1) users.db라는 SQLite 파일에 연결 (없으면 자동 생성)
     conn = sqlite3.connect("users.db")
     cur = conn.cursor()
 
-    # 2) users 테이블 생성
-    #   - user_id    : 로그인용 아이디
-    #   - password_hash : 비밀번호 해시 (bcrypt로 저장할 예정)
-    #   - name       : 이름
-    #   - phone      : 연락처
-    #   - org        : 소속
-    #   + id, created_at 은 내부 관리용 필드
+    # 1) users 테이블 (기존 그대로)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,9 +18,24 @@ def init_db():
         );
     """)
 
+    # 2) umbrellas 테이블 (우산 대여/반납 기록)
+    #   - user_id : 어떤 회원이
+    #   - status  : 'RENTED' / 'RETURNED'
+    #   - rented_at / returned_at : 시각 기록
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS umbrellas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            status TEXT NOT NULL,
+            rented_at TEXT,
+            returned_at TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+    """)
+
     conn.commit()
     conn.close()
-    print("✅ users.db 파일과 users 테이블(아이디/비번/이름/연락처/소속)이 준비되었습니다.")
+    print("✅ users.db / users, umbrellas 테이블이 준비되었습니다.")
 
 if __name__ == "__main__":
     init_db()

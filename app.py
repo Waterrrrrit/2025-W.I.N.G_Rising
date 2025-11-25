@@ -74,6 +74,65 @@ def login_user(user_id, password):
     else:
         return False, "비밀번호가 올바르지 않습니다."
 
+# ---------- 우산 대여/반납 관련 함수 ----------
+def get_current_rental(user_db_id):
+    """해당 회원이 현재 대여 중인 우산이 있는지 조회"""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT id, status, rented_at, returned_at
+        FROM umbrellas
+        WHERE user_id = ? AND returned_at IS NULL
+        ORDER BY rented_at DESC
+        LIMIT 1;
+        """,
+        (user_db_id,)
+    )
+    row = cur.fetchone()
+    conn.close()
+    return row  # 없으면 None
+
+def rent_umbrella(user_db_id):
+    """우산 대여 처리"""
+    if get_current_rental(user_db_id) is not None:
+        return False, "이미 대여 중인 우산이 있습니다."
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO umbrellas (user_id, status, rented_at, returned_at)
+        VALUES (?, ?, ?, NULL);
+        """,
+        (user_db_id, "RENTED", datetime.now().isoformat())
+    )
+    conn.commit()
+    conn.close()
+    return True, "우산 대여가 완료되었습니다."
+
+def return_umbrella(user_db_id):
+    """우산 반납 처리"""
+    current = get_current_rental(user_db_id)
+    if current is None:
+        return False, "현재 대여 중인 우산이 없습니다."
+
+    rental_id = current[0]
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        UPDATE umbrellas
+        SET status = ?, returned_at = ?
+        WHERE id = ?;
+        """,
+        ("RETURNED", datetime.now().isoformat(), rental_id)
+    )
+    conn.commit()
+    conn.close()
+    return True, "우산 반납이 완료되었습니다."
+
 # ---------- Streamlit 메인 ----------
 def main():
     st.set_page_config(page_title="다시펴다", page_icon="🍃")
@@ -83,13 +142,13 @@ def main():
         st.session_state["user"] = None
     if "page" not in st.session_state:
         st.session_state["page"] = "home"   # home, auth
-    # 메인 이미지 인덱스
     if "img_index" not in st.session_state:
-        st.session_state["img_index"] = 0
+        st.session_state["img_index"] = 0   # 메인 이미지 인덱스
 
     # 1) 로그인된 상태 -----------------------------
     if st.session_state["user"] is not None:
         user = st.session_state["user"]
+        user_db_id = user["id"]  # umbrellas 테이블에서 사용할 PK
 
         st.title("🔐 회원 시스템 ")
         st.success(f"{user['name']}({user['user_id']})님, 환영합니다! 🎉")
@@ -99,6 +158,39 @@ def main():
         st.write(f"- 아이디: **{user['user_id']}**")
         st.write(f"- 연락처: **{user['phone'] or '미등록'}**")
         st.write(f"- 소속: **{user['org'] or '미등록'}**")
+
+        st.markdown("---")
+
+        # 🌂 우산 대여 / 반납 기능
+        st.markdown("### 🌂 우산 대여 / 반납")
+
+        current_rental = get_current_rental(user_db_id)
+        has_umbrella = current_rental is not None
+
+        if has_umbrella:
+            st.info("현재 상태: **우산 대여 중**입니다.")
+        else:
+            st.info("현재 상태: 대여 중인 우산이 없습니다.")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("우산 대여하기", disabled=has_umbrella):
+                ok, msg = rent_umbrella(user_db_id)
+                if ok:
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
+
+        with col2:
+            if st.button("우산 반납하기", disabled=not has_umbrella):
+                ok, msg = return_umbrella(user_db_id)
+                if ok:
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
 
         st.markdown("---")
         st.write("여기 아래부터는 **로그인한 회원만** 사용할 기능들을 붙이면 됩니다.")
@@ -134,7 +226,7 @@ def main():
         else:
             st.info("표시할 메인 이미지가 없습니다. MAIN_IMAGES 리스트를 확인해 주세요.")
 
-        # 이미지를 '넘기는' 버튼 (이미지를 클릭해달라고 안내해도 버튼이 실제 동작 담당)
+        # 이미지를 '넘기는' 버튼
         if st.button("👉 Next"):
             st.session_state["img_index"] = (st.session_state["img_index"] + 1) % len(
                 MAIN_IMAGES
