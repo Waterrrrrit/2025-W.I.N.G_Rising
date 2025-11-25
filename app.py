@@ -76,7 +76,7 @@ def login_user(user_id, password):
 
 # ---------- Streamlit 메인 ----------
 def main():
-    st.set_page_config(page_title="회원 관리 MVP", page_icon="🔐")
+    st.set_page_config(page_title="다시펴다", page_icon="🍃")
 
     # 세션 상태 초기화
     if "user" not in st.session_state:
@@ -91,7 +91,7 @@ def main():
     if st.session_state["user"] is not None:
         user = st.session_state["user"]
 
-        st.title("🔐 SQLite + Streamlit 회원 시스템 (MVP)")
+        st.title("🔐 회원 시스템 ")
         st.success(f"{user['name']}({user['user_id']})님, 환영합니다! 🎉")
 
         st.markdown("### 👤 내 정보")
@@ -111,7 +111,7 @@ def main():
 
     # 2) 메인(랜딩) 페이지 ------------------------
     if st.session_state["page"] == "home":
-        st.title("다시펴다")
+        st.title("다시펴다 with WING")
 
         # 현재 보여줄 이미지 선택
         current_idx = st.session_state["img_index"]
