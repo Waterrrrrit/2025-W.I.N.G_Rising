@@ -111,7 +111,7 @@ def main():
 
     # 2) 메인(랜딩) 페이지 ------------------------
     if st.session_state["page"] == "home":
-        st.title("🌱 다시펴다 W.I.N.G 회원 시스템")
+        st.title("다시펴다")
 
         # 현재 보여줄 이미지 선택
         current_idx = st.session_state["img_index"]
@@ -125,7 +125,7 @@ def main():
                 st.image(
                     current_img,
                     use_column_width=True,
-                    caption="이미지를 클릭하거나 아래 버튼을 눌러 다음 이미지를 볼 수 있습니다.",
+                    caption="아래 버튼을 눌러 다음 이미지를 볼 수 있습니다.",
                 )
             except Exception:
                 st.info(
@@ -135,7 +135,7 @@ def main():
             st.info("표시할 메인 이미지가 없습니다. MAIN_IMAGES 리스트를 확인해 주세요.")
 
         # 이미지를 '넘기는' 버튼 (이미지를 클릭해달라고 안내해도 버튼이 실제 동작 담당)
-        if st.button("👉 다음 이미지로 넘기기"):
+        if st.button("👉 Next"):
             st.session_state["img_index"] = (st.session_state["img_index"] + 1) % len(
                 MAIN_IMAGES
             )
@@ -143,13 +143,8 @@ def main():
 
         st.markdown(
             """
-            ### 폐현수막 업사이클링 프로젝트에 오신 것을 환영합니다 👋  
-
-            이 페이지에서는  
-            - 프로젝트에 참여하는 **팀원/참여자 회원가입**  
-            - 활동에 필요한 **기본 정보 관리**  
-
-            를 간단하게 진행할 수 있습니다.
+            WING 페이지에 오신 것을 환영합니다!
+            본 페이지에서는 WING의 프로젝트 이야기, 회원 로그인과 우산 대여 및 반납을 할 수 있습니다!
             """
         )
 
