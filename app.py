@@ -313,12 +313,6 @@ def main():
             )
             st.rerun()
 
-        st.markdown(
-            """
-            WING 페이지에 오신 것을 환영합니다!
-            본 페이지에서는 WING의 프로젝트 이야기, 회원 로그인과 우산 대여 및 반납을 할 수 있습니다!
-            """
-        )
 
         st.markdown("---")
         st.write("아직 회원이 아니라면 먼저 **회원가입**, 이미 계정이 있다면 **로그인**을 진행해 주세요.")
@@ -352,7 +346,8 @@ def main():
         # 회원가입 탭
         with tab_register:
             st.subheader("회원가입")
-
+            st.write("다시펴다 서비스에서는 더 나은 우산 대여 경험을 위해 사용자 데이터를 수집하고 있습니다. " \
+                    "수집된 데이터는RIS-ING 사업 외의 용도로 쓰이지 않으니, 안심하고 회원가입해주세요.")
             reg_user_id = st.text_input("아이디", key="reg_user_id")
             reg_pw = st.text_input("비밀번호", type="password", key="reg_pw")
             reg_pw2 = st.text_input("비밀번호 확인", type="password", key="reg_pw2")
