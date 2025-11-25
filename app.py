@@ -235,8 +235,7 @@ def main():
                 else:
                     st.error(msg)
 
-        st.markdown("---")
-        st.write("여기 아래부터는 **로그인한 회원만** 사용할 기능들을 붙이면 됩니다.")
+     
 
         if st.button("로그아웃"):
             st.session_state["user"] = None
