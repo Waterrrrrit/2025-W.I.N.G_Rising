@@ -2,6 +2,7 @@
 import streamlit as st
 import sqlite3
 import bcrypt
+import os
 from datetime import datetime
 
 # 메인 페이지에서 사용할 이미지들 (원하는 파일명으로 바꾸기)
@@ -101,6 +102,8 @@ def login_user(user_id, password):
         return False, "존재하지 않는 아이디입니다."
 
     db_id, db_user_id, db_password_hash, db_name, db_phone, db_org = row
+    if isinstance(db_password_hash, str):
+        db_password_hash = db_password_hash.encode("utf-8")
 
     if bcrypt.checkpw(password.encode("utf-8"), db_password_hash):
         user_info = {
@@ -179,7 +182,7 @@ def main():
 
     # ✅ DB 스키마 준비 (데이터 삭제 아님)
     init_db()
-
+    st.write("📂 DB 실제 경로:", os.path.abspath("users.db"))
     # 세션 상태 초기화
     if "user" not in st.session_state:
         st.session_state["user"] = None
