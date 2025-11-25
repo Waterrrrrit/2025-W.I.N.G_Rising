@@ -5,6 +5,8 @@ import bcrypt
 import os
 from datetime import datetime
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "users.db")
 # 메인 페이지에서 사용할 이미지들 (원하는 파일명으로 바꾸기)
 MAIN_IMAGES = [
     "main1.png",
@@ -17,8 +19,9 @@ MAIN_IMAGES = [
 ]
 
 # ---------- DB 연결 ----------
+
 def get_conn():
-    return sqlite3.connect("users.db")
+    return sqlite3.connect(DB_PATH)
 
 # ---------- DB 초기화 (스키마만 보정, 데이터 삭제 없음) ----------
 def init_db():
@@ -182,7 +185,6 @@ def main():
 
     # ✅ DB 스키마 준비 (데이터 삭제 아님)
     init_db()
-    st.write("📂 DB 실제 경로:", os.path.abspath("users.db"))
     # 세션 상태 초기화
     if "user" not in st.session_state:
         st.session_state["user"] = None
