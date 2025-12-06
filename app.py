@@ -10,9 +10,14 @@ from sqlalchemy.exc import IntegrityError
 # -------------------------------------------------------------------
 # 0. Supabase(PostgreSQL) 연결 설정
 # -------------------------------------------------------------------
+# 📌 .streamlit/secrets.toml 또는 Streamlit Cloud Secrets 에서는
+# [supabase_db]
+# url = "postgresql+psycopg2://postgres:비밀번호@db.ixobrnombelwssyoeohu.supabase.co:5432/postgres?sslmode=require"
+# 이런 형태로 저장해 둔다.
 db_conf = st.secrets["supabase_db"]
 
-DB_URL = db_conf["postgresql://postgres:[YOUR_PASSWORD]@db.ixobrnombelwssyoeohu.supabase.co:5432/postgres"]
+# URL 하나만 사용 (user/host/port 직접 조합 X)
+DB_URL = db_conf["url"]
 
 engine = create_engine(DB_URL, pool_pre_ping=True)
 
@@ -267,7 +272,7 @@ def main():
     if st.session_state["page"] == "home":
         st.title("다시펴다 with WING")
 
-        # 🔥 🔥 제목 바로 아래에 설문 버튼 추가 🔥 🔥
+        # 제목 바로 아래 설문 버튼
         st.link_button("📝 설문 작성하러 가기", FORM_URL)
 
         # 메인 이미지
