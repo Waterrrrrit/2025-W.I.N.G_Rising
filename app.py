@@ -12,11 +12,7 @@ from sqlalchemy.exc import IntegrityError
 # -------------------------------------------------------------------
 db_conf = st.secrets["supabase_db"]
 
-DB_URL = (
-    f"postgresql+psycopg2://{db_conf['user']}:{db_conf['password']}"
-    f"@{db_conf['host']}:{db_conf['port']}/{db_conf['database']}"
-    f"?sslmode={db_conf.get('sslmode', 'require')}"
-)
+DB_URL = db_conf["postgresql://postgres:[YOUR_PASSWORD]@db.ixobrnombelwssyoeohu.supabase.co:5432/postgres"]
 
 engine = create_engine(DB_URL, pool_pre_ping=True)
 
