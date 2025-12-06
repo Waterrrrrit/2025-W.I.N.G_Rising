@@ -17,7 +17,7 @@ from sqlalchemy.exc import IntegrityError
 db_conf = st.secrets["supabase_db"]
 
 # URL 하나만 사용 (user/host/port 직접 조합 X)
-DB_URL = db_conf["url"]
+DB_URL = db_conf["postgresql://postgres.ixobrnombelwssyoeohu:dksdkwhdy1#@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"]
 
 engine = create_engine(DB_URL, pool_pre_ping=True)
 
