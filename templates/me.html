@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}내 정보 · 다시펴다{% endblock %}
+{% block content %}
+<h1>🔐 회원 시스템</h1>
+<div class="msg success">{{ user.name }}({{ user.user_id }})님, 환영합니다!</div>
+
+<p style="margin:0"><b>이름:</b> {{ user.name }}</p>
+<p style="margin:0"><b>아이디:</b> {{ user.user_id }}</p>
+<p style="margin:0"><b>연락처:</b> {{ user.phone or '미등록' }}</p>
+<p style="margin:0"><b>소속:</b> {{ user.org or '미등록' }}</p>
+{% if not user.is_admin %}
+<p style="margin:0"><b>우산 대여 횟수:</b> {{ rental_count }}회</p>
+
+<hr>
+<h2>🌂 우산 대여 / 반납</h2>
+{% if has_umbrella %}
+  <div class="msg info">현재 우산을 <b>대여 중</b>입니다.</div>
+{% else %}
+  <div class="msg info">대여 중인 우산이 없습니다.</div>
+{% endif %}
+<div class="row">
+  <form method="post" action="/rent">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="btn primary" type="submit" style="width:100%" {% if has_umbrella %}disabled{% endif %}>우산 대여하기</button>
+  </form>
+  <form method="post" action="/return">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="btn primary" type="submit" style="width:100%" {% if not has_umbrella %}disabled{% endif %}>우산 반납하기</button>
+  </form>
+</div>
+{% else %}
+<hr>
+<div class="msg info">관리자 계정은 우산 대여 기능을 사용하지 않습니다.</div>
+{% endif %}
+
+<hr>
+<form method="post" action="/logout">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <button class="btn" type="submit">로그아웃</button>
+</form>
+{% endblock %}

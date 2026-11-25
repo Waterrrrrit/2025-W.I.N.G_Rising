@@ -22,13 +22,13 @@ engine = create_engine(DB_URL, pool_pre_ping=True)
 # 파일 이미지 리스트
 # -------------------------------------------------------------------
 MAIN_IMAGES = [
-    "main1.png",
-    "main2.png",
-    "main3.png",
-    "main4.png",
-    "main5.png",
-    "main6.png",
-    "main7.png"
+    "public/images/main1.png",
+    "public/images/main2.png",
+    "public/images/main3.png",
+    "public/images/main4.png",
+    "public/images/main5.png",
+    "public/images/main6.png",
+    "public/images/main7.png"
 ]
 
 # Google Form URL

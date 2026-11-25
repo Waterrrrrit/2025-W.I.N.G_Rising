@@ -1,4 +1,4 @@
-streamlit
-sqlalchemy
-psycopg2-binary
-bcrypt
+flask==3.1.2
+sqlalchemy==2.0.43
+psycopg2-binary==2.9.10
+bcrypt==4.3.0

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>다시펴다 with WING</h1>
+<a class="btn" href="{{ form_url }}" target="_blank" rel="noopener">📝 설문 작성하러 가기</a>
+
+<div style="margin:20px 0 12px">
+  <img id="slide" src="{{ images[0] }}" alt="다시펴다 소개 1" style="width:100%;height:auto;border-radius:8px;display:block">
+</div>
+<button class="btn" id="next" type="button">👉 Next</button>
+<span class="muted" id="pos" style="margin-left:8px">1 / {{ images|length }}</span>
+
+<hr>
+<p>아직 회원이 아니라면 <b>회원가입</b>, 이미 있다면 <b>로그인</b>을 진행해주세요.</p>
+<a class="btn primary" href="/auth">🔐 로그인 / 회원가입 하러 가기</a>
+
+<script>
+  const imgs = {{ images|tojson }};
+  let i = 0;
+  const el = document.getElementById("slide"), pos = document.getElementById("pos");
+  document.getElementById("next").addEventListener("click", () => {
+    i = (i + 1) % imgs.length;
+    el.src = imgs[i]; el.alt = "다시펴다 소개 " + (i + 1);
+    pos.textContent = (i + 1) + " / " + imgs.length;
+  });
+  imgs.slice(1).forEach(s => { const p = new Image(); p.src = s; });
+</script>
+{% endblock %}
